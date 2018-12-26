@@ -5,11 +5,28 @@ parent_stations = {}
 geo_stations = {}
 eq_stations = [] # list of parent stations (equivalent stations)
 
+class conn_type:
+    VEHICLE = 0
+    FOOT = 1
+    BEGIN = 2
+
+class Connection:
+	def __init__(self, deps, dept, arrs, arrt, trip_id = None, service_id = None, route_id = None, route_name = None, ctype = conn_type.VEHICLE):
+		self.deps = deps
+		self.dept = dept
+		self.arrs = arrs
+		self.arrt = arrt
+		self.trip_id = trip_id
+		self.service_id = service_id
+		self.route_id = route_id
+		self.route_name = route_name
+		self.ctype = ctype
+
 def load(city):
     with open("data/" + city + "/connections.dat", "r") as f:
         for l in f.readlines():
             ls = l[:-1].split(",")
-            connections.append((ls[0], int(ls[1]), ls[2], int(ls[3]), ls[4], ls[5], ls[6], ls[7]))
+            connections.append(Connection(ls[0], int(ls[1]), ls[2], int(ls[3]), ls[4], ls[5], ls[6], ls[7], conn_type.VEHICLE))
 
     with open("data/" + city + "/stops.dat", "r") as f:
         for l in f.readlines():
