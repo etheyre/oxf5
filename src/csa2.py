@@ -41,10 +41,6 @@ for s1 in eq_stations:
         if s1 != s2 and walk_time(geo_stations[s1], geo_stations[s2]) <= 0.2:
             neighbours[s1].append(s2)
 
-# for k in range(len(connections)):
-#     deps, dept, arrs, arrt, trip_id, service_id, route_id, route_name = connections[k]
-#     connections[k] = Connection(deps, dept, arrs, arrt, trip_id, service_id, route_id, route_name, conn_type.VEHICLE)
-            
 begin = 0
 
 transfer_t = 60
