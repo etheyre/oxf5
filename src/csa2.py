@@ -116,7 +116,7 @@ for c in reversed(route):
         curr_route_name = route_name
 
 print("total time:", s2time(route[0].arrt - dep_time))
-print("transit time:", s2time(route[0].arrt - route[-1][1]))
+print("transit time:", s2time(route[0].arrt - route[-1].dept))
 
 assert(sl[parent_stations[dep_stop]] == Connection(None, None, parent_stations[dep_stop], dep_time, ctype = conn_type.BEGIN))
 
