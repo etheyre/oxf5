@@ -93,21 +93,6 @@ while True:
     if s == parent_stations[dep_stop]:
         break
 
-# curr_trip = ""
-    
-# for c in reversed(route):
-#     deps, dept, arrs, arrt, trip_id, service_id, route_id, route_name, ctype = c
-
-#     if ctype == conn_type.FOOT:
-#         if curr_trip != conn_type.FOOT:
-#             curr_trip = conn_type.FOOT
-#             print(bcolor.BOLD, "à pied", bcolor.END)
-#     else:
-#         if trip_id != curr_trip:
-#             curr_trip = trip_id
-#             print(bcolor.BOLD, "trip:", trip_id, "(", route_id, ":", route_name, ")", bcolor.END)
-#     print("\t" + stopstr(deps) + "@" + dept + " [arrival: " + arrt + "]")
-
 print(bcolor.BOLD, "route", bcolor.END)
 
 beg_stop, beg_time = dep_stop, route[-1][3]
