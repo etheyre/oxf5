@@ -12,20 +12,30 @@ if len(sys.argv) != 2:
 
 city = sys.argv[1]
 
+stops = []
+
 with open("data/" + city + "/stops.txt", "r") as f:
     with open("data/" + city + "/stops.dat", "w") as fo:
         beg = f.readline()
         ls = beg[:-1].split(",")
-        print(ls)
         k = ls.index("stop_lat")
         k2 = ls.index("parent_station")
         for l in f.readlines():
             ls = l.split(",")
             parent_stop = ls[k2].strip()
+            stops.append((ls[0], ls[1], float(ls[k].strip()), float(ls[k+1].strip())))
             if parent_stop == "\"\"" or parent_stop == "":
                 parent_stop = ls[0]
             fo.write(ls[0] + "," + ls[1] + "," + ls[k].strip() + "," + ls[k+1].strip() + "," + parent_stop + "\n") # stop_id, stop_name, lat, lon, parent_station
 
+with open("data/" + city + "/neighbours.dat", "w") as f:
+	for s1 in stops:
+		f.write(s1[0] + " ")
+		for s2 in stops:
+			if s1 != s2 and walk_time((s1[2], s1[3]), (s2[2], s1[3])) <= 10*60:
+				f.write(s2[0] + " ")
+		f.write("\n")
+            
 routes = {}
 
 with open("data/" + city + "/routes.txt", "r") as f:
