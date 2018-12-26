@@ -30,20 +30,28 @@ print(str(len(stops)) + " stops et " + str(len(connections)) + " connexions")
         
 sl = {}
 
-for s in eq_stations:
+for s in stops:
     sl[s] = None
     
-sl[parent_stations[dep_stop]] = Connection(None, None, parent_stations[dep_stop], dep_time, ctype = conn_type.BEGIN) # la "connexion" du début (arrivée à la station)
+sl[dep_stop] = Connection(None, None, dep_stop, dep_time, ctype = conn_type.BEGIN) # la "connexion" du début (arrivée à la station)
 
 neighbours = {}
 
 start_time = time.time()
 
-for s1 in eq_stations:
-    neighbours[s1] = []
-    for s2 in eq_stations:
-        if s1 != s2 and walk_time(geo_stations[s1], geo_stations[s2]) <= 10*60:
-            neighbours[s1].append(s2)
+# for s1 in stops:
+#     neighbours[s1] = []
+#     for s2 in stops:
+#         if s1 != s2 and walk_time(geo_stations[s1], geo_stations[s2]) <= 10*60:
+#             neighbours[s1].append(s2)
+
+with open("data/" + city + "/neighbours.dat", "r") as f:
+	for l in f.readlines():
+		ls = l.split(" ")
+		if len(ls) < 2:
+			print("neighbours.dat file incorrect")
+			exit(-1)
+		neighbours[ls[0]] = ls[1:-1]
 
 print("neighbours building time:", time.time() - start_time)
             
@@ -65,26 +73,42 @@ for c in connections[begin:]:
     deps, dept, arrs, arrt = c.deps, c.dept, c.arrs, c.arrt
     n_connections += 1
 
-    if sl[parent_stations[arr_stop]] != None and dept > sl[parent_stations[arr_stop]].arrt:
+    if sl[arr_stop] != None and dept > sl[arr_stop].arrt:
         break
     
-    if sl[parent_stations[deps]] != None \
-       and ((c.trip_id == sl[parent_stations[deps]].trip_id and sl[parent_stations[deps]].arrt <= dept) \
-            or sl[parent_stations[deps]].arrt + transfer_t <= dept):
-        if sl[parent_stations[arrs]] == None:
-            sl[parent_stations[arrs]] = c
-        elif parent_stations[arrs] != parent_stations[dep_stop] and arrt <= sl[parent_stations[arrs]].arrt:
+    if sl[deps] != None \
+       and ((c.trip_id == sl[deps].trip_id and sl[deps].arrt <= dept) \
+            or sl[deps].arrt + transfer_t <= dept):
+        if sl[arrs] == None:
+            sl[arrs] = c
+        elif arrs != dep_stop and arrt <= sl[arrs].arrt:
             # c'est mieux !
-            sl[parent_stations[arrs]] = c
+            sl[arrs] = c
             n_updates += 1
-            for s in neighbours[parent_stations[arrs]]:
-                foot_arrt = c.arrt + walk_time(geo_stations[parent_stations[arrs]], geo_stations[parent_stations[s]])
-                conn = Connection(parent_stations[arrs], c.arrt, parent_stations[s], foot_arrt, ctype = conn_type.FOOT)
-                if sl[parent_stations[s]] == None:
-                    sl[parent_stations[s]] = conn
-                elif parent_stations[s] != parent_stations[dep_stop] and foot_arrt <= sl[parent_stations[s]].arrt:
-                    sl[parent_stations[s]] = conn
+            for s in neighbours[arrs]:
+                foot_arrt = c.arrt + walk_time(geo_stations[arrs], geo_stations[s])
+                conn = Connection(arrs, c.arrt, s, foot_arrt, ctype = conn_type.FOOT)
+                if sl[s] == None:
+                    sl[s] = conn
+                elif s != dep_stop and foot_arrt <= sl[s].arrt:
+                    sl[s] = conn
                     n_updates += 1
+
+s = arr_stop
+
+route = []
+
+while True:
+    c = sl[s]
+    route.append(c)
+    if c == None:
+        print("not reachable")
+        exit(-1)
+    s = c.deps
+    if s == dep_stop:
+        break
+
+end_time = time.time()
 
 print("number of updates:", n_updates)
 print("number of connections:", str(n_connections) + "/" + str(len(connections)))
@@ -95,23 +119,7 @@ for s, v in sl.items():
 	if v != None:
 		n_reached += 1
 
-print("number of reached stations:", str(n_reached) + "/" + str(len(eq_stations)))
-
-s = parent_stations[arr_stop]
-
-route = []
-
-while True:
-    c = sl[s]
-    route.append(c)
-    if c == None:
-        print("not reachable")
-        exit(-1)
-    s = parent_stations[c.deps]
-    if s == parent_stations[dep_stop]:
-        break
-
-end_time = time.time()
+print("number of reached stations:", str(n_reached) + "/" + str(len(stops)))
 
 print(bcolor.BOLD, "route", bcolor.END)
 
@@ -162,17 +170,13 @@ print("total time:", s2time(route[0].arrt - dep_time))
 print("transit time:", s2time(route[0].arrt - route[-1].dept))
 print("processing time:", end_time - start_time)
 
-assert(sl[parent_stations[dep_stop]] == Connection(None, None, parent_stations[dep_stop], dep_time, ctype = conn_type.BEGIN))
+assert(sl[dep_stop] == Connection(None, None, dep_stop, dep_time, ctype = conn_type.BEGIN))
 
 for s, c in sl.items():
     if c != None:
         try:
-            assert(parent_stations[s] == parent_stations[c.arrs])
+            assert(s == c.arrs)
         except:
             print(s, c)
         if c.dept != None:
             assert(c.dept <= c.arrt)
-
-"""
-maintenant qu'il y a des trajets à pied, il faut enlever l'équivalence station-station parent ; cela permettra peut-être d'éviter trop de correspondances.
-"""
