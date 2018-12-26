@@ -12,8 +12,8 @@ if len(sys.argv) != 2:
 
 city = sys.argv[1]
 
-with open(city + "/stops.txt", "r") as f:
-    with open(city + "/stops.dat", "w") as fo:
+with open("data/" + city + "/stops.txt", "r") as f:
+    with open("data/" + city + "/stops.dat", "w") as fo:
         beg = f.readline()
         ls = beg[:-1].split(",")
         print(ls)
@@ -28,14 +28,14 @@ with open(city + "/stops.txt", "r") as f:
 
 routes = {}
 
-with open(city + "/routes.txt", "r") as f:
+with open("data/" + city + "/routes.txt", "r") as f:
     for l in f.readlines()[1:]:
         ls = l.split(",")
         routes[ls[0]] = ls[2]
 
 trips = {}
         
-with open(city + "/trips.txt", "r") as f:
+with open("data/" + city + "/trips.txt", "r") as f:
     for l in f.readlines()[1:]:
         ls = l.split(",")
         trips[ls[2]] = (ls[0], ls[1])
@@ -43,7 +43,7 @@ with open(city + "/trips.txt", "r") as f:
 stop_times = {}
 n_stop_times = 0
 
-with open(city + "/stop_times.txt", "r") as f:
+with open("data/" + city + "/stop_times.txt", "r") as f:
     for l in f.readlines()[1:]:
         ls = l.split(",")
         trip_id = ls[0]
@@ -86,6 +86,6 @@ assert(n_stop_times == len(connections) + first_deps_ctr)
 
 connections = sorted(connections, key = lambda c: c[1])
             
-with open(city + "/connections.dat", "w") as f:
+with open("data/" + city + "/connections.dat", "w") as f:
     for c in connections:
         f.write(",".join(list(c)) + "\n")
