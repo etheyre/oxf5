@@ -22,6 +22,14 @@ class Connection:
 		self.route_name = route_name
 		self.ctype = ctype
 
+	def __eq__(self, other):
+		if other is None:
+			return False
+		return self.__dict__ == other.__dict__
+
+	def __neq__(self, other):
+		return not self == other
+
 def load(city):
     with open("data/" + city + "/connections.dat", "r") as f:
         for l in f.readlines():
