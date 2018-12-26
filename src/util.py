@@ -86,8 +86,8 @@ def walk_time(p1, p2):
     lon2 *= pi/180
     #d = acos(sin(lat1)*sin(lat2) + cos(lat1)*cos(lat2)*cos(lon1-lon2)) * 6371 # rayon de la Terre (km)
     d = 6371 * 2 * asin(sqrt((sin((lat1-lat2)/2))**2 + cos(lat1)*cos(lat2)*(sin((lon1-lon2)/2))**2))
-    city_d = d # histoires d'escaliers et de diagonales => sqrt(2)*d ?
+    city_d = sqrt(2)*d # histoires d'escaliers et de diagonales => sqrt(2)*d ?
 
     walk_speed = 5/3600 # km/s
 
-    return city_d/walk_speed # s
+    return int(city_d/walk_speed) # s
