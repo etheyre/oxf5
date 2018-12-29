@@ -94,8 +94,10 @@ for c in connections[begin:]:
 			if sl[s] == None:
 				sl[s] = conn
 				foot_updates.append(s)
-			elif sl[s] != None and foot_arrt < sl[s].arrt:
+			elif sl[s] != None and foot_arrt <= sl[s].arrt:
 				sl[s] = conn
+				if foot_arrt != sl[s].arrt:
+					foot_updates.append(s)
 				n_updates += 1
 				n_foot_updates += 1
 
