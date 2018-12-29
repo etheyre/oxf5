@@ -30,11 +30,12 @@ class Connection:
 	def __neq__(self, other):
 		return not self == other
 
-def load(city):
+def load(city, dept = 0, N = 0):
     with open("data/" + city + "/connections.dat", "r") as f:
         for l in f.readlines():
             ls = l[:-1].split(",")
-            connections.append(Connection(ls[0], int(ls[1]), ls[2], int(ls[3]), ls[4], ls[5], ls[6], ls[7], conn_type.VEHICLE))
+            if int(ls[1]) >= dept:
+	            connections.append(Connection(ls[0], int(ls[1]), ls[2], int(ls[3]), ls[4], ls[5], ls[6], ls[7], conn_type.VEHICLE))
 
     with open("data/" + city + "/stops.dat", "r") as f:
         for l in f.readlines():
