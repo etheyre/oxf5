@@ -75,7 +75,7 @@ for trip_id, stt in stop_times.items():
         if ss > 1 and st != None:
             ss_c = ss-1
 
-            while stt[ss_c] == None and ss_c >= 1: # à cause de Metz
+            while stt[ss_c] == None and ss_c >= 1:
                 ss_c -= 1
 
             if ss_c == 0:
