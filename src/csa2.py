@@ -8,15 +8,6 @@ def stopstr(s):
     
     return stop_names[s] + " (" + s + ")"
 
-if len(sys.argv) >= 2:
-    city = sys.argv[1]
-else:
-    city = "lyon"
-
-start_time = time.time()
-load(city)
-print("loading time:", time.time() - start_time)
-
 if len(sys.argv) != 5:
     print("default parameters")
     dep_stop = stops[random.randint(0, len(stops))]
@@ -24,95 +15,112 @@ if len(sys.argv) != 5:
     dep_time = time2s("07:15:00")
 else:
     dep_stop, arr_stop, dep_time = sys.argv[2], sys.argv[3], time2s(sys.argv[4])
+
+if len(sys.argv) >= 2:
+    city = sys.argv[1]
+else:
+    city = "lyon"
+
+start_time = time.time()
+load(city, dept = dep_time)
+print("loading time:", time.time() - start_time)
         
 print(stopstr(dep_stop) + "@" + s2time(dep_time) + " -> " + stopstr(arr_stop) + " (" + city + ")")
-print(str(len(stops)) + " stops et " + str(len(connections)) + " connexions")
-        
+print(str(len(stops)) + " arrêts et " + str(len(connections)) + " connexions")
+
 sl = {}
 
 for s in stops:
     sl[s] = None
-    
+	
 sl[dep_stop] = Connection(None, None, dep_stop, dep_time, ctype = conn_type.BEGIN) # la "connexion" du début (arrivée à la station)
 
 neighbours = {}
 
 start_time = time.time()
 
-# for s1 in stops:
-#     neighbours[s1] = []
-#     for s2 in stops:
-#         if s1 != s2 and walk_time(geo_stations[s1], geo_stations[s2]) <= 10*60:
-#             neighbours[s1].append(s2)
-
 with open("data/" + city + "/neighbours.dat", "r") as f:
 	for l in f.readlines():
 		ls = l.split(" ")
 		if len(ls) < 2:
-			print("neighbours.dat file incorrect")
+			print("incorrect neighbours.dat file")
 			exit(-1)
 		neighbours[ls[0]] = ls[1:-1]
 
 print("neighbours building time:", time.time() - start_time)
-            
+			
 start_time = time.time()
-            
+
+foot_updates = [dep_stop]
+
 begin = 0
 
-transfer_t = 60*2
-        
+transfer_t = 60*3
+		
 for k, c in enumerate(connections): # remplacer ça par une dichotomie
-    if dep_time <= c.dept:
-        begin = k
-        break
+	if dep_time <= c.dept:
+		begin = k
+		break
 
 n_updates = 0
 n_connections = 0
+n_foot_updates = 0
 
 for c in connections[begin:]:
-    deps, dept, arrs, arrt = c.deps, c.dept, c.arrs, c.arrt
-    n_connections += 1
+	deps, dept, arrs, arrt = c.deps, c.dept, c.arrs, c.arrt
+	n_connections += 1
 
-    if sl[arr_stop] != None and dept > sl[arr_stop].arrt:
-        break
-    
-    if sl[deps] != None \
-       and ((c.trip_id == sl[deps].trip_id and sl[deps].arrt <= dept) \
-            or sl[deps].arrt + transfer_t <= dept):
-        if sl[arrs] == None:
-            sl[arrs] = c
-        elif arrs != dep_stop and arrt <= sl[arrs].arrt:
-            # c'est mieux !
-            sl[arrs] = c
-            n_updates += 1
-            for s in neighbours[arrs]:
-                foot_arrt = c.arrt + walk_time(geo_stations[arrs], geo_stations[s])
-                conn = Connection(arrs, c.arrt, s, foot_arrt, ctype = conn_type.FOOT)
-                if sl[s] == None:
-                    sl[s] = conn
-                elif s != dep_stop and foot_arrt <= sl[s].arrt:
-                    sl[s] = conn
-                    n_updates += 1
+	if sl[arr_stop] != None and dept > sl[arr_stop].arrt:
+		break
+	
+	if sl[deps] != None \
+	   and ((c.trip_id == sl[deps].trip_id and sl[deps].arrt <= dept) \
+			or sl[deps].arrt + transfer_t <= dept):
+		if sl[arrs] == None:
+			sl[arrs] = c
+			foot_updates.append(arrs)
+		elif arrs != dep_stop and arrt <= sl[arrs].arrt: # si c'est égal, priviliégier celui qui ne fait pas changer de mode de transport ?
+			# c'est mieux !
+			sl[arrs] = c
+			foot_updates.append(arrs)
+			n_updates += 1
+
+	while(len(foot_updates) != 0):
+		beg_s = foot_updates.pop()
+		for s in neighbours[beg_s]:
+			foot_arrt = sl[beg_s].arrt + walk_time(geo_stations[beg_s], geo_stations[s])
+			conn = Connection(beg_s, sl[beg_s].arrt, s, foot_arrt, ctype = conn_type.FOOT)
+			if sl[s] == None and foot_arrt - sl[beg_s].arrt <= 10*60:
+				sl[s] = conn
+				foot_updates.append(s)
+				n_foot_updates += 1
+			elif sl[s] != None and s != dep_stop and foot_arrt <= sl[s].arrt:
+				sl[s] = conn
+				if foot_arrt != sl[s].arrt:
+					foot_updates.append(s)
+				n_updates += 1
+				n_foot_updates += 1
 
 s = arr_stop
 
 route = []
 
 while True:
-    c = sl[s]
-    route.append(c)
-    if c == None:
-        print("not reachable")
-        exit(-1)
-    s = c.deps
-    if s == dep_stop:
-        break
+	c = sl[s]
+	route.append(c)
+	if c == None:
+		print("not reachable")
+		exit(-1)
+	s = c.deps
+	if s == dep_stop:
+		break
 
 end_time = time.time()
 
 print("number of updates:", n_updates)
+print("number of foot updates:", n_foot_updates)
 print("number of connections:", str(n_connections) + "/" + str(len(connections)))
-                    
+					
 n_reached = 0
 
 for s, v in sl.items():
@@ -173,10 +181,10 @@ print("processing time:", end_time - start_time)
 assert(sl[dep_stop] == Connection(None, None, dep_stop, dep_time, ctype = conn_type.BEGIN))
 
 for s, c in sl.items():
-    if c != None:
-        try:
-            assert(s == c.arrs)
-        except:
-            print(s, c)
-        if c.dept != None:
-            assert(c.dept <= c.arrt)
+	if c != None:
+		try:
+			assert(s == c.arrs)
+		except:
+			print(s, c)
+		if c.dept != None:
+			assert(c.dept <= c.arrt)
