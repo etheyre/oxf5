@@ -72,7 +72,7 @@ def s2time(s):
     h = m//60
     m %= 60
 
-    return str(h) + ":" + str(m) + ":" + str(s)
+    return str(h) + ":" + str(m).rjust(2, "0") + ":" + str(s).rjust(2, "0")
 
 def walk_time(p1, p2):
     """ Renvoie la durée estimée d'une marche à pied entre p1 et p2. """
