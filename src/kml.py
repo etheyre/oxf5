@@ -1,5 +1,5 @@
 def write(coords, filename):
-	with open(filename, "w") as f:
+	with open("res/" + filename, "w") as f:
 		f.write("""<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n""")
 		for c in coords:
 			station, cc = c
