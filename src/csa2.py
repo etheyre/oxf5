@@ -68,10 +68,11 @@ n_foot_updates = 0
 
 for c in connections[begin:]:
 	deps, dept, arrs, arrt = c.deps, c.dept, c.arrs, c.arrt
-	n_connections += 1
 
 	if sl[arr_stop] != None and dept > sl[arr_stop].arrt:
 		break
+
+	n_connections += 1
 	
 	if sl[deps] != None \
 	   and ((c.trip_id == sl[deps].trip_id and sl[deps].arrt <= dept) \
@@ -79,7 +80,7 @@ for c in connections[begin:]:
 		if sl[arrs] == None:
 			sl[arrs] = c
 			foot_updates.append(arrs)
-		elif arrs != dep_stop and arrt <= sl[arrs].arrt: # si c'est égal, priviliégier celui qui ne fait pas changer de mode de transport ?
+		elif arrt <= sl[arrs].arrt: # si c'est égal, priviliégier celui qui ne fait pas changer de mode de transport ?
 			# c'est mieux !
 			sl[arrs] = c
 			foot_updates.append(arrs)
@@ -90,14 +91,11 @@ for c in connections[begin:]:
 		for s in neighbours[beg_s]:
 			foot_arrt = sl[beg_s].arrt + walk_time(geo_stations[beg_s], geo_stations[s])
 			conn = Connection(beg_s, sl[beg_s].arrt, s, foot_arrt, ctype = conn_type.FOOT)
-			if sl[s] == None and foot_arrt - sl[beg_s].arrt <= 10*60:
+			if sl[s] == None:
 				sl[s] = conn
 				foot_updates.append(s)
-				n_foot_updates += 1
-			elif sl[s] != None and s != dep_stop and foot_arrt <= sl[s].arrt:
+			elif sl[s] != None and foot_arrt < sl[s].arrt:
 				sl[s] = conn
-				if foot_arrt != sl[s].arrt:
-					foot_updates.append(s)
 				n_updates += 1
 				n_foot_updates += 1
 
