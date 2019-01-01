@@ -13,9 +13,6 @@ $ python3 src/csa2.py nom_de_ces_horaires id1 id2 heure
 
 Où id1 et id2 sont respectivement les identifiant des arrêts de départ et d'arrivée, et heure, l'heure minimale de départ.
 
-## À faire
+## Plus d'informations
 
-- Réduire le temps d'exécution de make_connections et le volume de données généré.
-- Filtrer géographiquement les connexions qui seront ou non traitées.
-- Implémenter une architecture client/serveur : un serveur charge les données générées par make_connections et répond aux requêtes des clients. On pourrait tester le serveur en le chargeant au maximum de requêtes.
-- Plein d'autres choses
+Voir le wiki.
