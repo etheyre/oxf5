@@ -1,4 +1,8 @@
 # MCOT
+## Titre
+
+Planification de trajet dans un réseau de transports en commun.
+
 ## Bibliographie commentée (commune, moins de 500 mots)
 
 L’augmentation de l’importance des transports en commun nécessite la réali-
